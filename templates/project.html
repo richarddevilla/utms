@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3>Urban Temperature Monitoring System</h3>
+            </div>
+            <img class="card-img-top" src="{{ url_for('static', filename='img/Sydney.jpg') }}" alt="Card image cap">
+            <div class="card-body">
+                <p class="card-text">As urban areas are getting hotter and hotter on yearly basis, we want to identify the heat areas, that are the most affected by human development and provide useful data for them. Currently, there is too few weather stations and they are located too far from each other, which makes suboptimal assessment of present situation insufficient. The overheating issue is largely caused by the building materials such as steel, concrete and tarmac, building architecture and positioning. Also the lack of ‘green areas’ such as parks, playgrounds and open spaces contributes to this unwanted trend failing to provide the shade and regulate the temperature in natural ways. The data that we collect will help residents to understand how their neighbourhood compares to rest of the city as well as guide future home buyers and developers in their decisions on what building materials and green areas are ideal to make the future living more comfortable for everyone. This data will be essential for councils and other government entities, so they can develop standards and regulations to help to reduce and eventually resolve this issue. As we believe this data should be available to everyone, the data will be made available publicly on the internet in multiple formats. The content will be shared with other members of the community, citizens and everyone else on the internet to raise their awareness of the issue allowing them also to participate in this project. As more data driven approach is needed in the technology age, we have future plans to expand the project by extending the coverage area as well as expanding the infrastructure allowing to accommodate the data growth. Keeping up with technological trends and industry best security practices, we aim to become a ‘green’ company using data driven green initiatives to provide solutions to cities of the future.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

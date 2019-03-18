@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card h-100">
+              <div class="card-header ">
+                <div class="row">
+                  <div class="col-sm-6 text-left">
+                    <h5 class="card-category">Weekly Stats</h5>
+                    <h2 class="card-title">Monitoring</h2>
+                  </div>
+                  <div class="col-sm-6">
+                    <div class="btn-group btn-group-toggle float-right" data-toggle="buttons">
+                      <label class="btn btn-sm btn-primary btn-simple active" id="0">
+                        <input type="radio" name="options" checked>
+                        <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Temperature</span>
+                        <span class="d-block d-sm-none">
+                          <i class="tim-icons icon-single-02"></i>
+                        </span>
+                      </label>
+                      <label class="btn btn-sm btn-primary btn-simple" id="1">
+                        <input type="radio" class="d-none d-sm-none" name="options">
+                        <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Humidity</span>
+                        <span class="d-block d-sm-none">
+                          <i class="tim-icons icon-gift-2"></i>
+                        </span>
+                      </label>
+                      <label class="btn btn-sm btn-primary btn-simple" id="2">
+                        <input type="radio" class="d-none" name="options">
+                        <span class="d-none d-sm-block d-md-block d-lg-block d-xl-block">Pressure</span>
+                        <span class="d-block d-sm-none">
+                          <i class="tim-icons icon-tap-02"></i>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart-area">
+                  <canvas id="lineChartExample"></canvas>
+                </div>
+              </div>
+            </div>
+<script>
+<!-- javascript init -->
+$(document).ready(function(){
+// General configuration for the charts with Line gradientStroke
+gradientChartOptionsConfiguration =  {
+  maintainAspectRatio: false,
+  legend: {
+        display: false
+   },
+
+   tooltips: {
+     backgroundColor: '#fff',
+     titleFontColor: '#333',
+     bodyFontColor: '#666',
+     bodySpacing: 4,
+     xPadding: 12,
+     mode: "nearest",
+     intersect: 0,
+     position: "nearest"
+   },
+   responsive: true,
+   scales:{
+     yAxes: [{
+       barPercentage: 1.6,
+           gridLines: {
+             drawBorder: false,
+               color: 'rgba(29,140,248,0.0)',
+               zeroLineColor: "transparent",
+           },
+           ticks: {
+             suggestedMin:50,
+             suggestedMax: 110,
+               padding: 20,
+               fontColor: "#9a9a9a"
+           }
+         }],
+
+     xAxes: [{
+       barPercentage: 1.6,
+           gridLines: {
+             drawBorder: false,
+               color: 'rgba(220,53,69,0.1)',
+               zeroLineColor: "transparent",
+           },
+           ticks: {
+               padding: 20,
+               fontColor: "#9a9a9a"
+           }
+         }]
+     }
+};
+
+var ctx = document.getElementById("lineChartExample").getContext("2d");
+
+var gradientStroke = ctx.createLinearGradient(0,230,0,50);
+
+gradientStroke.addColorStop(1, 'rgba(72,72,176,0.2)');
+gradientStroke.addColorStop(0.2, 'rgba(72,72,176,0.0)');
+gradientStroke.addColorStop(0, 'rgba(119,52,169,0)'); //purple colors
+var data_low = {{ data_set.temp.low | tojson }}
+var data_mid = {{ data_set.temp.mid | tojson }}
+var data_high ={{ data_set.temp.high | tojson }}
+
+var config = {
+  type: 'line',
+  data: {
+  labels: {{ data_set.labels | tojson }},
+  datasets: [{
+    label: "Low",
+    fill: false,
+    backgroundColor: gradientStroke,
+    borderColor: '#04005e',
+    borderWidth: 2,
+    borderDash: [],
+    borderDashOffset: 0.0,
+    pointBackgroundColor: '#04005e',
+    pointBorderColor:'rgba(255,255,255,0)',
+    pointHoverBackgroundColor: '#04005e',
+    pointBorderWidth: 20,
+    pointHoverRadius: 4,
+    pointHoverBorderWidth: 15,
+    pointRadius: 4,
+    data: data_low,
+    id: 'y-axis-1',
+  }, {
+    label: "Mid",
+    fill: false,
+    backgroundColor: gradientStroke,
+    borderColor: '#440bd4',
+    borderWidth: 2,
+    borderDash: [],
+    borderDashOffset: 0.0,
+    pointBackgroundColor: '#440bd4',
+    pointBorderColor:'rgba(255,255,255,0)',
+    pointHoverBackgroundColor: '#440bd4',
+    pointBorderWidth: 20,
+    pointHoverRadius: 4,
+    pointHoverBorderWidth: 15,
+    pointRadius: 4,
+    data: data_mid,
+    id: 'y-axis-2',
+  }, {
+    label: "High",
+    fill: false,
+    backgroundColor: gradientStroke,
+    borderColor: '#ff2079',
+    borderWidth: 2,
+    borderDash: [],
+    borderDashOffset: 0.0,
+    pointBackgroundColor: '#ff2079',
+    pointBorderColor:'rgba(255,255,255,0)',
+    pointHoverBackgroundColor: '#ff2079',
+    pointBorderWidth: 20,
+    pointHoverRadius: 4,
+    pointHoverBorderWidth: 15,
+    pointRadius: 4,
+    data: data_high,
+    id: 'y-axis-3',
+  }]
+},
+  options: {
+					responsive: true,
+					hoverMode: 'index',
+					stacked: false,
+					scales: {
+						yAxes: [{
+							type: 'linear',
+							position: 'left',
+							id: 'y-axis-1',
+						},{
+							type: 'linear',
+							position: 'right',
+							id: 'y-axis-2',
+							display: false,
+							gridLines: {
+								drawOnChartArea: false, // only want the grid lines for one axis to show up
+															},
+						},{
+							type: 'linear',
+							position: 'right',
+							id: 'y-axis-3',
+							display: false,
+							gridLines: {
+								drawOnChartArea: false, // only want the grid lines for one axis to show up
+															},
+						}],
+					}
+				}
+};
+
+
+var myChart = new Chart(ctx, config);
+    $("#0").click(function() {
+      var data = myChart.config.data;
+      data.datasets[0].data = data_low;
+      data.datasets[1].data = data_mid;
+      data.datasets[2].data = data_high;
+      myChart.update();
+    });
+    $("#1").click(function() {
+      var data = myChart.config.data;
+      var data_low = {{ data_set.humidity.low | tojson }}
+      var data_mid = {{ data_set.humidity.mid | tojson }}
+      var data_high ={{ data_set.humidity.high | tojson }}
+      data.datasets[0].data = data_low;
+      data.datasets[1].data = data_mid;
+      data.datasets[2].data = data_high;
+      myChart.update();
+    });
+
+    $("#2").click(function() {
+      var data = myChart.config.data;
+      var data_low = {{ data_set.pressure.low | tojson }}
+      var data_mid = {{ data_set.pressure.mid | tojson }}
+      var data_high ={{ data_set.pressure.high | tojson }}
+      data.datasets[0].data = data_low;
+      data.datasets[1].data = data_mid;
+      data.datasets[2].data = data_high;
+      myChart.update();
+    });
+ });
+</script>
+{% endblock %}

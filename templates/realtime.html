@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card h-100">
+              <div class="card-header ">
+                <div class="row">
+                  <div class="col-sm-12 text-left">
+                    <h2 class="card-title">Sensor Map</h2>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart-area">
+                  <table class="table">
+    <thead>
+        <tr>
+            <th class="text-center">#</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Probe</th>
+            <th class="text-right">Temperature</th>
+            <th class="text-right">Humidity</th>
+            <th class="text-right">Pressure</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for sense in sensor[1:] %}
+        <tr>
+            <td class="text-center">{{ sense[0] }}</td>
+            <td>{{ sense[1] }}</td>
+            <td>{{ sense[2] }}</td>
+            <td>{{ sense[3] }}</td>
+            <td class="text-right">{{ sense[4] }}</td>
+            <td class="text-right">{{ sense[5] }}</td>
+            <td class="text-right">{{ sense[6] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
