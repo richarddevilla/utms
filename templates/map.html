@@ -29,13 +29,26 @@
     <script>
 // Initialize and add the map
 function initMap() {
-  // The location of Uluru
-  var uluru = {lat: -25.344, lng: 131.036};
-  // The map, centered at Uluru
-  var map = new google.maps.Map(
-      document.getElementById('map'), {zoom: 4, center: uluru});
-  // The marker, positioned at Uluru
-  var marker = new google.maps.Marker({position: uluru, map: map});
+  /* Data points defined as a mixture of WeightedLocation and LatLng objects */
+var heatMapData = [
+    {% for probe in probes[1:] %}
+  {location: new google.maps.LatLng({{ probe[2] }}, {{ probe[3] }}), weight: {{ probe[4] }}},
+  {% endfor %}
+];
+
+var sydney = new google.maps.LatLng(-33.865143, 151.209900);
+
+map = new google.maps.Map(document.getElementById('map'), {
+  center: sydney,
+  zoom: 13,
+  mapTypeId: 'satellite'
+});
+
+var heatmap = new google.maps.visualization.HeatmapLayer({
+  data: heatMapData,
+  radius: 30
+});
+heatmap.setMap(map);
 }
     </script>
     <!--Load the API from the specified URL
@@ -44,7 +57,7 @@ function initMap() {
     * The callback parameter executes the initMap() function
     -->
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA0ilEmyVW8DkYKY6X2G3WZ4eCdjo5zmAE&callback=initMap">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA0ilEmyVW8DkYKY6X2G3WZ4eCdjo5zmAE&callback=initMap&libraries=visualization">
     </script>
 
 {% endblock %}
