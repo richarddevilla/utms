@@ -40,6 +40,7 @@ def project():
 def map():
     probes = csv_to_list('probe.csv')
     return render_template('map.html',probes=probes)
+
 @app.route('/team')
 def team():
     return render_template('team.html')
