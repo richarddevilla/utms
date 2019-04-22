@@ -23,41 +23,60 @@
                 </div>
               </div>
             </div>
-
+<div class="row">
+{% for i in range(0,10) %}
+    <div class="col-lg-3">
+        <div class="card">
+        <img class="card-img-top" src="{{ url_for('static', filename='img/simprobe.jpg') }}" alt="Max-width 75%">
+            <div class="card-body">
+            <h2 class="card-title">{{ sensors[i][0][1] }}</h2>
+            <p class="card-text">Timestamp: {{ sensors[i][0][5].strftime("%Y-%m-%d %H:%M:%S") }}</p>
+            <p class="card-text">Temperature: {{ sensors[i][0][2] }}</p>
+            <p class="card-text">Humidity: {{ sensors[i][0][3] }}</p>
+            <p class="card-text">Pressure: {{ sensors[i][0][4] }}</p>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+</div>
     <!--The div element for the map -->
+<script>
 
-    <script>
-// Initialize and add the map
-function initMap() {
-  /* Data points defined as a mixture of WeightedLocation and LatLng objects */
-var heatMapData = [
-    {% for probe in probes[1:] %}
-  {location: new google.maps.LatLng({{ probe[2] }}, {{ probe[3] }}), weight: {{ probe[4] }}},
-  {% endfor %}
-];
+      function initMap() {
 
-var sydney = new google.maps.LatLng(-33.865143, 151.209900);
+        var map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 10,
+          center: {lat: -33.86785, lng: 151.20732}
+        });
 
-map = new google.maps.Map(document.getElementById('map'), {
-  center: sydney,
-  zoom: 13,
-  mapTypeId: 'satellite'
-});
+        // Create an array of alphabetical characters used to label the markers.
+        var labels = [{% for probe in probes %}'{{ probe[0] }}',{% endfor %},]
+        // Add some markers to the map.
 
-var heatmap = new google.maps.visualization.HeatmapLayer({
-  data: heatMapData,
-  radius: 30
-});
-heatmap.setMap(map);
-}
+        // Note: The code uses the JavaScript Array.prototype.map() method to
+        // create an array of markers based on a given "locations" array.
+        // The map() method here has nothing to do with the Google Maps API.
+        var markers = locations.map(function(location, i) {
+          return new google.maps.Marker({
+            position: location,
+            label: labels[ i % labels.length ]
+          });
+        });
+
+        // Add a marker clusterer to manage the markers.
+        var markerCluster = new MarkerClusterer(map, markers,
+            {imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+      }
+
+      var locations = [
+        {% for probe in probes %}
+            {lat: {{ probe[1] }}, lng: {{ probe[2] }}},
+        {% endfor %}
+      ]
     </script>
-    <!--Load the API from the specified URL
-    * The async attribute allows the browser to render the page while the API loads
-    * The key parameter will contain your own API key (which is not needed for this tutorial)
-    * The callback parameter executes the initMap() function
-    -->
+    <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js">
+    </script>
     <script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA0ilEmyVW8DkYKY6X2G3WZ4eCdjo5zmAE&callback=initMap&libraries=visualization">
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyA0ilEmyVW8DkYKY6X2G3WZ4eCdjo5zmAE&callback=initMap">
     </script>
-
 {% endblock %}

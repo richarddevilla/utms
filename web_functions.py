@@ -2,18 +2,18 @@ from flask import Flask, render_template, url_for
 from flask_bootstrap import Bootstrap
 from random import randrange
 import csv
+import pyodbc
+from datetime import datetime, timedelta
+sql_config = """Driver=ODBC Driver 17 for SQL Server;
+                      Server=182.161.64.23,1433;
+                      Database=utms;
+                      Trusted_Connection=no;
+                      UID=sa;
+                      PWD=fjh&*3k.xc*2nm;"""
+
 
 app = Flask(__name__)
 Bootstrap(app)
-
-weekly_label = ['Monday',
-                'Tuesday',
-                'Wednesday',
-                'Thursday',
-                'Friday',
-                'Saturday',
-                'Sunday']
-
 
 def set_generator(min=10,max=40,count=10):
     data_list = []
@@ -21,15 +21,37 @@ def set_generator(min=10,max=40,count=10):
         data_list.append(randrange(min,max))
     return data_list
 
-
 def csv_to_list(path):
     with open (path, 'r') as f:
         reader = csv.reader(f)
         temp = list(reader)
     return temp
 
+def get_sensor_data():
+    temp_list = []
+    with pyodbc.connect(sql_config) as conn:
+        with conn.cursor() as cursor:
+            probe_cur = cursor.execute('select name from probes')
+            probe_list = probe_cur.fetchall()
+            for x in probe_list:
+                c = cursor.execute('select top 1 * from sensors where probe_name = ? order by id desc', x[0])
+                d = list(c.fetchall())
+                temp_list.append(d)
+    return temp_list
 
+def get_probe_data():
+    with pyodbc.connect(sql_config) as conn:
+        with conn.cursor() as cursor:
+            probe_cur = cursor.execute('select * from probes')
+            probe_list = probe_cur.fetchall()
+    return probe_list
 
+def get_column_data(column,flag,start,end):
+    with pyodbc.connect(sql_config) as conn:
+        with conn.cursor() as cursor:
+            cursor.execute('select '+flag+'('+column+') from sensors where timestamp between ? and ?', (start, end))
+            data = cursor.fetchval()
+    return data
 
 @app.route('/')
 @app.route('/project')
@@ -38,8 +60,9 @@ def project():
 
 @app.route('/map')
 def map():
-    probes = csv_to_list('probe.csv')
-    return render_template('map.html',probes=probes)
+    probes = get_probe_data()
+    sensors = get_sensor_data()
+    return render_template('map.html',probes=probes,sensors=sensors)
 
 @app.route('/team')
 def team():
@@ -47,55 +70,47 @@ def team():
 
 @app.route('/realtime')
 def realtime():
-    sensor = csv_to_list('sensor.csv')
+    sensor = get_sensor_data()
     return render_template('realtime.html',sensor=sensor)
 
 @app.route('/chart')
 def chart():
-    set_A1 = set_generator(min=0, max=10)
-    set_B1 = set_generator(min=11, max=20)
-    set_C1 = set_generator(min=21, max=30)
-    set_A2 = set_generator(min=30, max=35)
-    set_B2 = set_generator(min=35, max=40)
-    set_C2 = set_generator(min=40, max=45)
-    set_A3 = set_generator(min=1000, max=1005)
-    set_B3 = set_generator(min=1005, max=1010)
-    set_C3 = set_generator(min=1010, max=1015)
-    data_set = {'labels': weekly_label,
-                'temp': {'low': set_A1,
-                         'mid': set_B1,
-                         'high': set_C1},
-                'humidity': {'low': set_A2,
-                             'mid': set_B2,
-                             'high': set_C2},
-                'pressure': {'low': set_A3,
-                             'mid': set_B3,
-                             'high': set_C3}}
+    labels = []
+    low_temp = []
+    high_temp = []
+    mid_temp = []
+    low_humid = []
+    high_humid = []
+    mid_humid = []
+    low_pres = []
+    high_pres = []
+    mid_pres = []
+    last_7d = datetime.now().date() - timedelta(days=6)
+    # range of data, for our use we check last 7days
+    for i in range(0,7):
+        labels.append((last_7d+timedelta(days=i)).strftime('%a %Y-%m-%d'))
+        low_temp.append(get_column_data('temperature','min',last_7d+timedelta(days=i),last_7d+timedelta(days=i+1)))
+        high_temp.append(get_column_data('temperature','max',last_7d+timedelta(days=i),last_7d+timedelta(days=i+1)))
+        mid_temp.append(get_column_data('temperature','avg',last_7d+timedelta(days=i),last_7d+timedelta(days=i+1)))
+        low_humid.append(get_column_data('humidity','min',last_7d+timedelta(days=i),last_7d+timedelta(days=i+1)))
+        high_humid.append(get_column_data('humidity','max',last_7d+timedelta(days=i),last_7d+timedelta(days=i+1)))
+        mid_humid.append(get_column_data('humidity','avg',last_7d+timedelta(days=i),last_7d+timedelta(days=i+1)))
+        low_pres.append(get_column_data('pressure','min',last_7d+timedelta(days=i),last_7d+timedelta(days=i+1)))
+        high_pres.append(get_column_data('pressure','max',last_7d+timedelta(days=i),last_7d+timedelta(days=i+1)))
+        mid_pres.append(get_column_data('pressure','avg',last_7d+timedelta(days=i),last_7d+timedelta(days=i+1)))
+
+    data_set = {'labels': labels,
+                'temp': {'low': low_temp,
+                         'mid': mid_temp,
+                         'high': high_temp},
+                'humidity': {'low': low_humid,
+                             'mid': mid_humid,
+                             'high': high_humid},
+                'pressure': {'low': low_pres,
+                             'mid': mid_pres,
+                             'high': high_pres}}
     return render_template('chart.html',data_set=data_set)
 
-@app.route('/test')
-def test():
-    set_A1 = set_generator(min=0,max=10)
-    set_B1 = set_generator(min=11,max=20)
-    set_C1 = set_generator(min=21,max=30)
-    set_A2 = set_generator(min=30, max=35)
-    set_B2 = set_generator(min=35, max=40)
-    set_C2 = set_generator(min=40, max=45)
-    set_A3 = set_generator(min=1000, max=1005)
-    set_B3 = set_generator(min=1005, max=1010)
-    set_C3 = set_generator(min=1010, max=1015)
-    data_set = {'labels':weekly_label,
-                'temp':{'low':set_A1,
-                        'mid':set_B1,
-                        'high':set_C1},
-                'humidity':{'low': set_A2,
-                         'mid': set_B2,
-                         'high': set_C2},
-                'pressure':{'low': set_A3,
-                         'mid': set_B3,
-                         'high': set_C3}}
-
-    return render_template('test.html',data_set=data_set)
 
 if __name__ == '__main__':
-    app.run(host = '0.0.0.0')
+    app.run(debug=True)

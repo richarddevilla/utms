@@ -5,7 +5,7 @@
               <div class="card-header ">
                 <div class="row">
                   <div class="col-sm-12 text-left">
-                    <h2 class="card-title">Sensor Map</h2>
+                    <h2 class="card-title">Sensor Realtime Data</h2>
                   </div>
                 </div>
               </div>
@@ -24,15 +24,15 @@
         </tr>
     </thead>
     <tbody>
-        {% for sense in sensor[1:] %}
+        {% for sense in sensor %}
         <tr>
-            <td class="text-center">{{ sense[0] }}</td>
-            <td>{{ sense[1] }}</td>
-            <td>{{ sense[2] }}</td>
-            <td>{{ sense[3] }}</td>
-            <td class="text-right">{{ sense[4] }}</td>
-            <td class="text-right">{{ sense[5] }}</td>
-            <td class="text-right">{{ sense[6] }}</td>
+            <td class="text-center">{{ sense[0][0] }}</td>
+            <td>{{ sense[0][5].strftime("%Y-%m-%d") }}</td>
+            <td>{{ sense[0][5].strftime("%H:%M:%S") }}</td>
+            <td>{{ sense[0][1] }}</td>
+            <td class="text-right">{{ sense[0][2] }}</td>
+            <td class="text-right">{{ sense[0][3] }}</td>
+            <td class="text-right">{{ sense[0][4] }}</td>
         </tr>
         {% endfor %}
     </tbody>
