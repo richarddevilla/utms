@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block head%}<meta http-equiv="refresh" content="5">{% endblock %}
+{% block content %}
+<div class="card h-100">
+              <div class="card-header ">
+                <div class="row">
+                  <div class="col-sm-12 text-left">
+                    <h2 class="card-title">Sensor Status</h2>
+                  </div>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="chart-area">
+                  <table class="table">
+    <thead>
+        <tr>
+            <th class="text-center">Probe</th>
+            <th class="text-center">State</th>
+            <th class="text-center">Temperature State</th>
+            <th class="text-center">Humidity State</th>
+            <th class="text-center">Humidity State</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for status in status_list %}
+        <tr>
+            <td class="text-center">{{ status[0] }}</td>
+            <td class="text-center">{{ status[1] }}</td>
+            <td class="text-center">{{ status[2] }}</td>
+            <td class="text-center">{{ status[3] }}</td>
+            <td class="text-center">{{ status[4] }}</td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

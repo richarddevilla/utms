@@ -2,11 +2,12 @@
 <html lang="en">
   <head>
     {% if title %}
-    <title>{{ title }} - UMTS</title>
+    <title>{{ title }} - UTMS</title>
     {% else %}
-    <title>UMTS</title>
+    <title>UTMS</title>
     {% endif %}
     <!-- Required meta tags -->
+    {% block head %}{% endblock %}
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
@@ -69,7 +70,7 @@
     </li>
 
     <li>
-    <a class="nav-link" href="#0">
+    <a class="nav-link" href="./status">
     <i class="fas fa-heartbeat"></i>
     <p>Probe Status</p>
     </a>

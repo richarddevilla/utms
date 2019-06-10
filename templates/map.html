@@ -24,10 +24,10 @@
               </div>
             </div>
 <div class="row">
-{% for i in range(0,10) %}
-    <div class="col-lg-3">
+{% for i in range(0,sensors|length) %}
+    <div class="col-lg-2 col-sm-6 col-md-4">
         <div class="card">
-        <img class="card-img-top" src="{{ url_for('static', filename='img/simprobe.jpg') }}" alt="Max-width 75%">
+        <img class="card-img-top" src="{{ url_for('static', filename='img/'+sensors[i][0][1]+'.jpg') }}" alt="Max-width 75%">
             <div class="card-body">
             <h2 class="card-title">{{ sensors[i][0][1] }}</h2>
             <p class="card-text">Timestamp: {{ sensors[i][0][5].strftime("%Y-%m-%d %H:%M:%S") }}</p>
