@@ -6,6 +6,8 @@ import pyodbc
 from datetime import datetime, timedelta
 import time
 from math import sin, cos, sqrt, atan2, radians
+
+# SQL connection String
 db_uid=''
 db_pwd=''
 db_server=''
@@ -16,13 +18,21 @@ sql_config = """Driver=ODBC Driver 17 for SQL Server;
                       Trusted_Connection=no;
                       UID={};
                       PWD={};""".format(db_server,db_database,db_uid,db_pwd)
-
+# Flask Config
 app = Flask(__name__)
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 Bootstrap(app)
 
 
 def get_distance(lat1, lon1, lat2, lon2):
+    """
+    Takes 2 sets of latitude and longtitude then returns the distance between them
+    :param lat1:
+    :param lon1:
+    :param lat2:
+    :param lon2:
+    :return float distance:
+    """
     R = 6373.0
     dlon = radians(abs(lon2)) - radians(abs(lon1))
     dlat = radians(abs(lat2)) - radians(abs(lat1))
@@ -32,21 +42,11 @@ def get_distance(lat1, lon1, lat2, lon2):
     return distance
 
 
-def set_generator(min=10, max=40, count=10):
-    data_list = []
-    for i in range(0, count):
-        data_list.append(randrange(min, max))
-    return data_list
-
-
-def csv_to_list(path):
-    with open(path, 'r') as f:
-        reader = csv.reader(f)
-        temp = list(reader)
-    return temp
-
-
 def get_sensor_data():
+    """
+    Method to retrieve sensor data such as the temperature, humidity, and pressure frorm sql server
+    :return list of sensor data:
+    """
     temp_list = []
     with pyodbc.connect(sql_config) as conn:
         with conn.cursor() as cursor:
@@ -60,6 +60,10 @@ def get_sensor_data():
 
 
 def get_probe_data():
+    """
+    Method to retrieve probe data such as name, lat, lon, and image
+    :return list of probe data:
+    """
     with pyodbc.connect(sql_config) as conn:
         with conn.cursor() as cursor:
             probe_cur = cursor.execute('select * from probes')
@@ -68,6 +72,10 @@ def get_probe_data():
 
 
 def get_sensor_probe_data():
+    """
+    Method to retrieve last readings of the probe and sensor union data
+    :return list of probe U sensor data:
+    """
     result_list = []
     with pyodbc.connect(sql_config) as conn:
         with conn.cursor() as cursor:
@@ -86,6 +94,14 @@ def get_sensor_probe_data():
             return result_list
 
 def get_column_data(column, flag, start, end):
+    """
+    Method to analyze sensor data by getting their min, max, or avg data between 2 given dates
+    :param column as string temperature, humitidity or pressure:
+    :param flag as string min, max or avg:
+    :param start as date object:
+    :param end as date object:
+    :return list of sensor data:
+    """
     with pyodbc.connect(sql_config) as conn:
         with conn.cursor() as cursor:
             cursor.execute('select ' + flag + '(' + column + ') from sensors where timestamp between ? and ?',
@@ -121,32 +137,43 @@ def status():
     # ('probe_01', -33.8333, 151.017, 47.5, 27.98, 1027.09, datetime.datetime(2019, 5, 13, 23, 11, 46, 137000))
     sensor_probe = get_sensor_probe_data()
     status_list = []
+    # analyze the probe's condition
+    # compares the readings of the probes between other give in a radius of distance_to_check
+    # if readings go over the set threshold by max_acceptable_diff times then the sensor reading would be
+    # tagged as "BAD".
+    temp_threshold = 5
+    pres_threshold = 10
+    humd_threshold = 10
+    max_acceptable_diff = 2
+    # in KM
+    distance_to_check = 8
     for probe in sensor_probe:
         recal_temp = 0
         recal_humid = 0
         recal_pressure = 0
+        # Checks if the probe have sent data within the last 5 mins
         if (datetime.now()-probe[6]).total_seconds() > 360:
             state = 'OFFLINE'
         else:
             state = 'ONLINE'
         for p in sensor_probe:
             distance = get_distance(probe[1], probe[2], p[1], p[2])
-            if distance < 8 and not distance == 0:
-                if abs(probe[3]-p[3]) > 5:
+            if distance < distance_to_check and not distance == 0:
+                if abs(probe[3]-p[3]) > temp_threshold:
                     recal_temp +=1
-                if abs(probe[4]-p[4]) > 5:
+                if abs(probe[4]-p[4]) > humd_threshold:
                     recal_humid +=1
-                if abs(probe[5]-p[5]) > 5:
+                if abs(probe[5]-p[5]) > pres_threshold:
                     recal_pressure +=1
-        if recal_temp > 1:
+        if recal_temp > max_acceptable_diff:
             recal_temp = 'BAD'
         else:
             recal_temp = 'GOOD'
-        if recal_humid > 1:
+        if recal_humid > max_acceptable_diff:
             recal_humid = 'BAD'
         else:
             recal_humid = 'GOOD'
-        if recal_pressure > 1:
+        if recal_pressure > max_acceptable_diff:
             recal_pressure = 'BAD'
         else:
             recal_pressure = 'GOOD'

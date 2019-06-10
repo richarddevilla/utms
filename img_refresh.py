@@ -1,5 +1,9 @@
 import pyodbc
 import time
+db_uid=''
+db_pwd=''
+db_server=''
+db_database=''
 sql_config = """Driver=ODBC Driver 17 for SQL Server;
                       Server={};
                       Database={};
